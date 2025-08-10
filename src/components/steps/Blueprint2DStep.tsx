@@ -13,7 +13,7 @@ import {
   Settings,
   ArrowRight
 } from 'lucide-react';
-import { fabric } from 'fabric';
+import * as fabric from 'fabric';
 import { useAppStore } from '../../store/useAppStore';
 
 const Blueprint2DStep: React.FC = () => {
