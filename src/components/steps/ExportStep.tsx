@@ -244,7 +244,7 @@ const ExportStep: React.FC = () => {
               {/* Export Button */}
               <div className="mt-6 flex justify-center">
                 <motion.button
-                  onClick={() => exportType && handleExport(exportType)}
+                  onClick={() => exportType && !isExporting && handleExport(exportType)}
                   disabled={!exportType || isExporting}
                   className={`px-8 py-3 rounded-lg font-semibold transition-all ${
                     exportType && !isExporting
@@ -277,27 +277,27 @@ const ExportStep: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-amber-700">Project Name:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.name}</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.name || 'Untitled'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Plot Size:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.plot.width} × {currentProject.plot.length} ft</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.plot?.width ?? '-'} × {currentProject?.plot?.length ?? '-'} ft</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Total Area:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.plot.area.toLocaleString()} sq ft</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.plot?.area?.toLocaleString() ?? '-'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Floors:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.requirements.floors}</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.requirements?.floors ?? '-'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Bedrooms:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.requirements.bedrooms}</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.requirements?.bedrooms ?? '-'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-amber-700">Bathrooms:</span>
-                  <span className="text-amber-900 font-medium">{currentProject.requirements.bathrooms}</span>
+                  <span className="text-amber-900 font-medium">{currentProject?.requirements?.bathrooms ?? '-'}</span>
                 </div>
               </div>
             </motion.div>

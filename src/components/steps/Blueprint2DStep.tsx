@@ -28,6 +28,12 @@ const Blueprint2DStep: React.FC = () => {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Dispose previous canvas if exists
+    if (fabricCanvasRef.current) {
+      fabricCanvasRef.current.dispose();
+      fabricCanvasRef.current = null;
+    }
+
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: 800,
       height: 600,
@@ -74,7 +80,7 @@ const Blueprint2DStep: React.FC = () => {
         selectable: false,
         evented: false
       });
-      gridGroup.addWithUpdate(line);
+      gridGroup.add(line);
     }
 
     // Horizontal lines
@@ -85,11 +91,19 @@ const Blueprint2DStep: React.FC = () => {
         selectable: false,
         evented: false
       });
-      gridGroup.addWithUpdate(line);
+      gridGroup.add(line);
     }
 
     canvas.add(gridGroup);
-    canvas.sendToBack(gridGroup);
+
+    // If canvas.sendToBack exists, use it. Otherwise, use workaround.
+    if (typeof canvas.sendToBack === 'function') {
+      canvas.sendToBack(gridGroup);
+    } else {
+      // Move the last object (gridGroup) to the front of the array (bottom of stack)
+      canvas._objects.unshift(canvas._objects.pop());
+      canvas.renderAll();
+    }
   };
 
   const generateAIBlueprint = (canvas: fabric.Canvas) => {
