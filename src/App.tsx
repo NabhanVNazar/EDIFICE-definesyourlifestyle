@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store/useAppStore';
+import LandingPage from './components/landing/LandingPage';
 
 // Components
 import Header from './components/common/Header';
@@ -15,7 +16,19 @@ import ElevationsStep from './components/steps/ElevationsStep';
 import ExportStep from './components/steps/ExportStep';
 
 const App: React.FC = () => {
-  const { currentStep } = useAppStore();
+  const { currentStep, user } = useAppStore();
+  const [showLanding, setShowLanding] = React.useState(true);
+
+  // Show main app if user is logged in or has started designing
+  const showMainApp = user || !showLanding;
+
+  const handleGetStarted = () => {
+    setShowLanding(false);
+  };
+
+  if (!showMainApp) {
+    return <LandingPage onGetStarted={handleGetStarted} />;
+  }
 
   const renderStep = () => {
     switch (currentStep) {
