@@ -53,7 +53,7 @@ const Logo: React.FC = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
         >
-          AI Home Design
+          Defines Your Lifestyle
         </motion.p>
       </div>
     </motion.div>

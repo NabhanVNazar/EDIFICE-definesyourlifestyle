@@ -45,7 +45,16 @@ const Header: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Pricing
+              Account
+            </motion.a>
+
+            <motion.a
+              href="#"
+              className="text-amber-900 hover:text-amber-700 font-medium transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Settings
             </motion.a>
           </nav>
 

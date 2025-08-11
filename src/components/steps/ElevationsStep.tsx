@@ -108,24 +108,24 @@ const ElevationsStep: React.FC = () => {
         >
           <h3 className="text-xl font-semibold text-amber-900 mb-4 flex items-center">
             <Home className="mr-3" size={20} />
-            {currentProject.name}
+            {currentProject?.name || 'Untitled Project'}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="bg-amber-50 p-3 rounded-lg">
               <p className="text-amber-600 font-medium">Plot Size</p>
-              <p className="text-amber-900">{currentProject.plot.width} × {currentProject.plot.length} ft</p>
+              <p className="text-amber-900">{currentProject?.plot?.width ?? '-'} × {currentProject?.plot?.length ?? '-'} ft</p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg">
               <p className="text-blue-600 font-medium">Floors</p>
-              <p className="text-blue-900">{currentProject.requirements.floors} floor{currentProject.requirements.floors > 1 ? 's' : ''}</p>
+              <p className="text-blue-900">{currentProject?.requirements?.floors ?? '-'} floor{(currentProject?.requirements?.floors ?? 1) > 1 ? 's' : ''}</p>
             </div>
             <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-green-600 font-medium">Bedrooms</p>
-              <p className="text-green-900">{currentProject.requirements.bedrooms} bedroom{currentProject.requirements.bedrooms > 1 ? 's' : ''}</p>
+              <p className="text-green-900">{currentProject?.requirements?.bedrooms ?? '-'} bedroom{(currentProject?.requirements?.bedrooms ?? 1) > 1 ? 's' : ''}</p>
             </div>
             <div className="bg-purple-50 p-3 rounded-lg">
               <p className="text-purple-600 font-medium">Kitchen</p>
-              <p className="text-purple-900">{currentProject.requirements.kitchen} style</p>
+              <p className="text-purple-900">{currentProject?.requirements?.kitchen ?? '-'}</p>
             </div>
           </div>
         </motion.div>
@@ -206,6 +206,13 @@ const ElevationsStep: React.FC = () => {
           ))}
         </div>
 
+        {/* Selected Style Display */}
+        {selectedStyle && (
+          <div className="text-center mb-2 text-amber-700 font-medium">
+            Selected: {elevationStyles.find(s => s.id === selectedStyle)?.name}
+          </div>
+        )}
+
         {/* AI Customization Note */}
         <motion.div
           className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 border border-blue-100"
@@ -240,6 +247,7 @@ const ElevationsStep: React.FC = () => {
           transition={{ delay: 1 }}
         >
           <motion.button
+            aria-label="Generate Final Design"
             onClick={handleContinue}
             disabled={!selectedStyle}
             className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 ${
