@@ -1,18 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, 
-  Mail, 
-  Lock, 
-  User, 
-  Eye, 
-  EyeOff,
-  Google,
-  Github,
-  Sparkles,
-  Shield,
-  Zap
-} from 'lucide-react';
+import { X, Mail, Lock, User, Eye, EyeOff, ToggleLeft as Google, Github, Sparkles, Shield, Zap } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
