@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Palette, 
   Star, 
@@ -8,7 +8,13 @@ import {
   Home,
   Building,
   TreePine,
-  Brush
+  Brush,
+  Sparkles,
+  Wand2,
+  RefreshCw,
+  Download,
+  Eye,
+  Heart
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { ElevationStyle } from '../../types';
@@ -16,20 +22,24 @@ import { ElevationStyle } from '../../types';
 const ElevationsStep: React.FC = () => {
   const { currentProject, setCurrentStep } = useAppStore();
   const [selectedStyle, setSelectedStyle] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<ElevationStyle[]>([]);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
 
-  const elevationStyles: ElevationStyle[] = [
+  const baseElevationStyles: ElevationStyle[] = [
     {
       id: 'modern',
       name: 'Modern Minimalist',
-      description: 'Clean lines, large windows, neutral colors',
+      description: 'Clean lines, large windows, neutral colors with steel and glass elements',
       thumbnail: 'https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=400',
-      features: ['Floor-to-ceiling windows', 'Flat rooflines', 'Minimal ornamentation', 'Steel and glass'],
+      features: ['Floor-to-ceiling windows', 'Flat rooflines', 'Minimal ornamentation', 'Steel and glass facade'],
       materials: ['Concrete', 'Steel', 'Glass', 'Stone']
     },
     {
       id: 'contemporary',
-      name: 'Contemporary Style',
-      description: 'Mixed materials, asymmetrical design, bold features',
+      name: 'Contemporary Fusion',
+      description: 'Mixed materials, asymmetrical design, bold architectural features',
       thumbnail: 'https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=400',
       features: ['Mixed textures', 'Large overhangs', 'Natural lighting', 'Open concepts'],
       materials: ['Wood', 'Stone', 'Metal', 'Stucco']
@@ -68,6 +78,78 @@ const ElevationsStep: React.FC = () => {
     }
   ];
 
+  const generateAISuggestions = async () => {
+    if (!currentProject) return;
+
+    setIsGenerating(true);
+    
+    // Simulate AI generation based on project requirements
+    setTimeout(() => {
+      const suggestions: ElevationStyle[] = [
+        {
+          id: 'ai-custom-1',
+          name: `AI Optimized for ${currentProject.plot.width}×${currentProject.plot.length} Plot`,
+          description: `Custom design optimized for your ${currentProject.requirements.floors}-floor home with ${currentProject.requirements.bedrooms} bedrooms`,
+          thumbnail: 'https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=400',
+          features: [
+            `Optimized for ${currentProject.plot.area} sq ft plot`,
+            `${currentProject.requirements.floors}-story design`,
+            `${currentProject.requirements.bedrooms} bedroom layout integration`,
+            'Climate-responsive features'
+          ],
+          materials: ['Smart Glass', 'Composite Materials', 'Energy-efficient Insulation', 'Solar-ready Roofing']
+        },
+        {
+          id: 'ai-custom-2',
+          name: 'AI Eco-Friendly Design',
+          description: 'Sustainable design with energy-efficient features and natural materials',
+          thumbnail: 'https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=400',
+          features: [
+            'Solar panel integration',
+            'Rainwater harvesting system',
+            'Natural ventilation design',
+            'Green roof options'
+          ],
+          materials: ['Recycled Steel', 'Bamboo', 'Reclaimed Wood', 'Low-E Glass']
+        },
+        {
+          id: 'ai-custom-3',
+          name: 'AI Smart Home Integration',
+          description: 'Future-ready design with smart home technology integration',
+          thumbnail: 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?auto=compress&cs=tinysrgb&w=400',
+          features: [
+            'Smart lighting integration',
+            'Automated climate control',
+            'Security system ready',
+            'EV charging station'
+          ],
+          materials: ['Smart Glass', 'Fiber Cement', 'Aluminum Composite', 'LED-integrated Materials']
+        }
+      ];
+
+      // Add custom prompt-based suggestion if provided
+      if (customPrompt.trim()) {
+        suggestions.unshift({
+          id: 'ai-custom-prompt',
+          name: 'AI Custom Design',
+          description: `Custom design based on your requirements: "${customPrompt}"`,
+          thumbnail: 'https://images.pexels.com/photos/1370704/pexels-photo-1370704.jpeg?auto=compress&cs=tinysrgb&w=400',
+          features: [
+            'Custom AI interpretation',
+            'Personalized design elements',
+            'Unique architectural features',
+            'Tailored material selection'
+          ],
+          materials: ['Custom Selection', 'Premium Materials', 'Specialty Finishes', 'Designer Elements']
+        });
+      }
+
+      setAiSuggestions(suggestions);
+      setIsGenerating(false);
+      setShowAiSuggestions(true);
+    }, 3000);
+  };
+
   const handleContinue = () => {
     setCurrentStep('export');
   };
@@ -79,6 +161,8 @@ const ElevationsStep: React.FC = () => {
       </div>
     );
   }
+
+  const allStyles = showAiSuggestions ? [...aiSuggestions, ...baseElevationStyles] : baseElevationStyles;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -95,9 +179,97 @@ const ElevationsStep: React.FC = () => {
             Choose Your Elevation Style
           </h1>
           <p className="text-lg text-amber-700 max-w-2xl mx-auto">
-            Select the exterior design that best matches your vision. Our AI will customize it to your specific requirements.
+            Select the exterior design that best matches your vision. Our AI will customize it to your specific requirements and local climate.
           </p>
         </motion.div>
+
+        {/* AI Generation Section */}
+        <motion.div
+          className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 mb-8 border border-purple-200"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex items-start space-x-4">
+            <div className="bg-purple-100 p-3 rounded-full">
+              <Wand2 size={24} className="text-purple-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-purple-900 mb-2">AI-Powered Custom Designs</h3>
+              <p className="text-purple-700 mb-4">
+                Let our AI create personalized elevation designs based on your project requirements, local climate, and architectural preferences.
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-purple-800 mb-2">
+                  Describe your ideal home exterior (optional):
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., 'I want a modern home with large windows, natural stone accents, and a welcoming entrance...'"
+                  className="w-full px-4 py-3 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+
+              <motion.button
+                onClick={generateAISuggestions}
+                disabled={isGenerating}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                  isGenerating
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg'
+                }`}
+                whileHover={!isGenerating ? { scale: 1.02 } : {}}
+                whileTap={!isGenerating ? { scale: 0.98 } : {}}
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    <span>Generating AI Designs...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    <span>Generate AI Suggestions</span>
+                  </>
+                )}
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Loading Animation */}
+        <AnimatePresence>
+          {isGenerating && (
+            <motion.div
+              className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-amber-100"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <div className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-purple-200 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 w-16 h-16 border-4 border-purple-600 rounded-full animate-spin border-t-transparent"></div>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-amber-900 mb-2">AI is Creating Your Custom Designs</h3>
+                <p className="text-amber-700 mb-4">
+                  Analyzing your requirements: {currentProject.plot.width}×{currentProject.plot.length} ft plot, 
+                  {currentProject.requirements.floors} floors, {currentProject.requirements.bedrooms} bedrooms
+                </p>
+                <div className="flex justify-center space-x-4 text-sm text-amber-600">
+                  <span>🏗️ Optimizing layout</span>
+                  <span>🎨 Selecting materials</span>
+                  <span>🌿 Climate adaptation</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Project Summary */}
         <motion.div
@@ -110,7 +282,7 @@ const ElevationsStep: React.FC = () => {
             <Home className="mr-3" size={20} />
             {currentProject?.name || 'Untitled Project'}
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <div className="bg-amber-50 p-3 rounded-lg">
               <p className="text-amber-600 font-medium">Plot Size</p>
               <p className="text-amber-900">{currentProject?.plot?.width ?? '-'} × {currentProject?.plot?.length ?? '-'} ft</p>
@@ -127,90 +299,149 @@ const ElevationsStep: React.FC = () => {
               <p className="text-purple-600 font-medium">Kitchen</p>
               <p className="text-purple-900">{currentProject?.requirements?.kitchen ?? '-'}</p>
             </div>
+            <div className="bg-pink-50 p-3 rounded-lg">
+              <p className="text-pink-600 font-medium">Features</p>
+              <p className="text-pink-900">
+                {[
+                  currentProject?.requirements?.garage && 'Garage',
+                  currentProject?.requirements?.garden && 'Garden',
+                  currentProject?.requirements?.balcony && 'Balcony'
+                ].filter(Boolean).join(', ') || 'Basic'}
+              </p>
+            </div>
           </div>
         </motion.div>
 
         {/* Style Selection Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {elevationStyles.map((style, index) => (
-            <motion.div
-              key={style.id}
-              className={`bg-white rounded-2xl shadow-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                selectedStyle === style.id
-                  ? 'border-amber-500 shadow-xl'
-                  : 'border-gray-100 hover:border-amber-300 hover:shadow-lg'
-              }`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 + 0.3 }}
-              onClick={() => setSelectedStyle(style.id)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {/* Image */}
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={style.thumbnail}
-                  alt={style.name}
-                  className="w-full h-full object-cover"
-                />
-                {selectedStyle === style.id && (
-                  <div className="absolute inset-0 bg-amber-500 bg-opacity-20 flex items-center justify-center">
-                    <div className="bg-amber-500 text-white p-2 rounded-full">
-                      <Check size={24} />
+          {allStyles.map((style, index) => {
+            const isAiGenerated = style.id.startsWith('ai-');
+            return (
+              <motion.div
+                key={style.id}
+                className={`bg-white rounded-2xl shadow-lg overflow-hidden border-2 transition-all cursor-pointer relative ${
+                  selectedStyle === style.id
+                    ? 'border-amber-500 shadow-xl ring-2 ring-amber-200'
+                    : 'border-gray-100 hover:border-amber-300 hover:shadow-lg'
+                }`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 + 0.3 }}
+                onClick={() => setSelectedStyle(style.id)}
+                whileHover={{ scale: 1.02, y: -5 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {/* AI Badge */}
+                {isAiGenerated && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                      <Sparkles size={10} />
+                      <span>AI Generated</span>
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Content */}
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-amber-900 mb-2">{style.name}</h3>
-                <p className="text-amber-700 text-sm mb-4">{style.description}</p>
+                {/* Selection Indicator */}
+                {selectedStyle === style.id && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <div className="bg-amber-500 text-white p-2 rounded-full">
+                      <Check size={16} />
+                    </div>
+                  </div>
+                )}
 
-                {/* Features */}
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-amber-800 mb-2 flex items-center">
-                    <Star size={14} className="mr-1" />
-                    Key Features
-                  </h4>
-                  <ul className="text-xs text-amber-600 space-y-1">
-                    {style.features.slice(0, 3).map((feature, i) => (
-                      <li key={i} className="flex items-center">
-                        <div className="w-1 h-1 bg-amber-400 rounded-full mr-2" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+                {/* Image */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={style.thumbnail}
+                    alt={style.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                  />
+                  {selectedStyle === style.id && (
+                    <div className="absolute inset-0 bg-amber-500 bg-opacity-20 flex items-center justify-center">
+                      <div className="bg-white bg-opacity-90 p-3 rounded-full">
+                        <Heart size={24} className="text-amber-600" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Materials */}
-                <div>
-                  <h4 className="text-sm font-medium text-amber-800 mb-2 flex items-center">
-                    <Brush size={14} className="mr-1" />
-                    Materials
-                  </h4>
-                  <div className="flex flex-wrap gap-1">
-                    {style.materials.map((material, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full"
-                      >
-                        {material}
-                      </span>
-                    ))}
+                {/* Content */}
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-amber-900 mb-2">{style.name}</h3>
+                  <p className="text-amber-700 text-sm mb-4 leading-relaxed">{style.description}</p>
+
+                  {/* Features */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-amber-800 mb-2 flex items-center">
+                      <Star size={14} className="mr-1" />
+                      Key Features
+                    </h4>
+                    <ul className="text-xs text-amber-600 space-y-1">
+                      {style.features.slice(0, 3).map((feature, i) => (
+                        <li key={i} className="flex items-center">
+                          <div className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-2" />
+                          {feature}
+                        </li>
+                      ))}
+                      {style.features.length > 3 && (
+                        <li className="text-amber-500 font-medium">
+                          +{style.features.length - 3} more features
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Materials */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-amber-800 mb-2 flex items-center">
+                      <Brush size={14} className="mr-1" />
+                      Materials
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {style.materials.map((material, i) => (
+                        <span
+                          key={i}
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            isAiGenerated
+                              ? 'bg-purple-100 text-purple-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {material}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-2">
+                    <button className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg transition-colors text-sm">
+                      <Eye size={14} />
+                      <span>Preview</span>
+                    </button>
+                    <button className="flex items-center justify-center p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg transition-colors">
+                      <Download size={14} />
+                    </button>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Selected Style Display */}
         {selectedStyle && (
-          <div className="text-center mb-2 text-amber-700 font-medium">
-            Selected: {elevationStyles.find(s => s.id === selectedStyle)?.name}
-          </div>
+          <motion.div
+            className="text-center mb-8 p-4 bg-amber-50 rounded-lg border border-amber-200"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="text-amber-800 font-medium flex items-center justify-center space-x-2">
+              <Check size={16} className="text-green-600" />
+              <span>Selected: {allStyles.find(s => s.id === selectedStyle)?.name}</span>
+            </p>
+          </motion.div>
         )}
 
         {/* AI Customization Note */}
@@ -227,13 +458,15 @@ const ElevationsStep: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-blue-900 mb-2">AI-Powered Customization</h3>
               <p className="text-blue-700 mb-3">
-                Our AI will automatically adapt your selected style to match your specific requirements, plot dimensions, and local building codes.
+                Our AI will automatically adapt your selected style to match your specific requirements, plot dimensions, local building codes, and climate conditions.
               </p>
               <ul className="text-sm text-blue-600 space-y-1">
                 <li>• Optimized for your {currentProject.plot.width} × {currentProject.plot.length} ft plot</li>
                 <li>• Integrated with your {currentProject.requirements.floors}-floor layout</li>
                 <li>• Customized for {currentProject.requirements.bedrooms} bedrooms and {currentProject.requirements.bathrooms} bathrooms</li>
-                <li>• Includes your selected features (garage, garden, etc.)</li>
+                <li>• Includes your selected features (garage, garden, balcony, etc.)</li>
+                <li>• Climate-responsive design elements</li>
+                <li>• Energy-efficient material recommendations</li>
               </ul>
             </div>
           </div>
@@ -247,7 +480,6 @@ const ElevationsStep: React.FC = () => {
           transition={{ delay: 1 }}
         >
           <motion.button
-            aria-label="Generate Final Design"
             onClick={handleContinue}
             disabled={!selectedStyle}
             className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 ${

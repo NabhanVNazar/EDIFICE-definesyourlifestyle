@@ -107,13 +107,13 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Modal */}
           <motion.div
-            className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+            className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="grid md:grid-cols-2 h-full">
+            <div className="grid md:grid-cols-2 min-h-[600px]">
               {/* Left Side - Branding */}
               <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-8 text-white relative overflow-hidden">
                 <motion.button
