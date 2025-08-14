@@ -162,34 +162,29 @@ const Blueprint2DStep: React.FC = () => {
     const width = canvas.getWidth();
     const height = canvas.getHeight();
 
-    const gridGroup = new fabric.Group([], {
-      selectable: false,
-      evented: false,
-      name: 'grid'
-    });
-
+    // Create vertical grid lines
     for (let i = 0; i <= width; i += gridSize) {
       const line = new fabric.Line([i, 0, i, height], {
         stroke: '#e0e0e0',
         strokeWidth: 0.5,
         selectable: false,
-        evented: false
+        evented: false,
+        objectCaching: false
       });
-      gridGroup.add(line);
+      canvas.add(line);
     }
 
+    // Create horizontal grid lines
     for (let i = 0; i <= height; i += gridSize) {
       const line = new fabric.Line([0, i, width, i], {
         stroke: '#e0e0e0',
         strokeWidth: 0.5,
         selectable: false,
-        evented: false
+        evented: false,
+        objectCaching: false
       });
-      gridGroup.add(line);
+      canvas.add(line);
     }
-
-    canvas.add(gridGroup);
-    canvas.sendToBack(gridGroup);
   };
 
   const generateProfessionalBlueprint = (canvas: fabric.Canvas) => {
