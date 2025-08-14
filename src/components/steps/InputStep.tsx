@@ -14,9 +14,11 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Plot, Requirements, Project } from '../../types';
+import { AIService } from '../../services/aiService';
 
 const InputStep: React.FC = () => {
-  const { setCurrentStep, addProject } = useAppStore();
+  const { setCurrentStep, addProject, user } = useAppStore();
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const [plot, setPlot] = useState<Plot>({
     type: 'residential',
@@ -48,7 +50,9 @@ const InputStep: React.FC = () => {
     setPlot(updatedPlot);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    setIsGenerating(true);
+    
     const project: Project = {
       id: Date.now().toString(),
       name: projectName,
@@ -59,8 +63,21 @@ const InputStep: React.FC = () => {
       updatedAt: new Date()
     };
 
-    addProject(project);
-    setCurrentStep('2d-edit');
+    try {
+      // Generate AI blueprint
+      const blueprint = await AIService.generateBlueprint(plot, requirements);
+      project.blueprint = blueprint as any;
+      
+      addProject(project);
+      setCurrentStep('2d-edit');
+    } catch (error) {
+      console.error('Failed to generate blueprint:', error);
+      // Continue anyway with basic project
+      addProject(project);
+      setCurrentStep('2d-edit');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -302,13 +319,27 @@ const InputStep: React.FC = () => {
         >
           <motion.button
             onClick={handleContinue}
-            className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-3"
+            disabled={isGenerating}
+            className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 ${
+              isGenerating
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-xl'
+            }`}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Sparkles size={20} />
-            <span>Generate AI Blueprint</span>
-            <ArrowRight size={20} />
+            {isGenerating ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Generating AI Blueprint...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={20} />
+                <span>Generate AI Blueprint</span>
+                <ArrowRight size={20} />
+              </>
+            )}
           </motion.button>
         </motion.div>
       </motion.div>

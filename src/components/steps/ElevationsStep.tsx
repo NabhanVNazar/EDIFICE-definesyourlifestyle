@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { ElevationStyle } from '../../types';
+import { AIService } from '../../services/aiService';
 
 const ElevationsStep: React.FC = () => {
   const { currentProject, setCurrentStep } = useAppStore();
@@ -83,71 +84,20 @@ const ElevationsStep: React.FC = () => {
 
     setIsGenerating(true);
     
-    // Simulate AI generation based on project requirements
-    setTimeout(() => {
-      const suggestions: ElevationStyle[] = [
-        {
-          id: 'ai-custom-1',
-          name: `AI Optimized for ${currentProject.plot.width}×${currentProject.plot.length} Plot`,
-          description: `Custom design optimized for your ${currentProject.requirements.floors}-floor home with ${currentProject.requirements.bedrooms} bedrooms`,
-          thumbnail: 'https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=400',
-          features: [
-            `Optimized for ${currentProject.plot.area} sq ft plot`,
-            `${currentProject.requirements.floors}-story design`,
-            `${currentProject.requirements.bedrooms} bedroom layout integration`,
-            'Climate-responsive features'
-          ],
-          materials: ['Smart Glass', 'Composite Materials', 'Energy-efficient Insulation', 'Solar-ready Roofing']
-        },
-        {
-          id: 'ai-custom-2',
-          name: 'AI Eco-Friendly Design',
-          description: 'Sustainable design with energy-efficient features and natural materials',
-          thumbnail: 'https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=400',
-          features: [
-            'Solar panel integration',
-            'Rainwater harvesting system',
-            'Natural ventilation design',
-            'Green roof options'
-          ],
-          materials: ['Recycled Steel', 'Bamboo', 'Reclaimed Wood', 'Low-E Glass']
-        },
-        {
-          id: 'ai-custom-3',
-          name: 'AI Smart Home Integration',
-          description: 'Future-ready design with smart home technology integration',
-          thumbnail: 'https://images.pexels.com/photos/1029599/pexels-photo-1029599.jpeg?auto=compress&cs=tinysrgb&w=400',
-          features: [
-            'Smart lighting integration',
-            'Automated climate control',
-            'Security system ready',
-            'EV charging station'
-          ],
-          materials: ['Smart Glass', 'Fiber Cement', 'Aluminum Composite', 'LED-integrated Materials']
-        }
-      ];
-
-      // Add custom prompt-based suggestion if provided
-      if (customPrompt.trim()) {
-        suggestions.unshift({
-          id: 'ai-custom-prompt',
-          name: 'AI Custom Design',
-          description: `Custom design based on your requirements: "${customPrompt}"`,
-          thumbnail: 'https://images.pexels.com/photos/1370704/pexels-photo-1370704.jpeg?auto=compress&cs=tinysrgb&w=400',
-          features: [
-            'Custom AI interpretation',
-            'Personalized design elements',
-            'Unique architectural features',
-            'Tailored material selection'
-          ],
-          materials: ['Custom Selection', 'Premium Materials', 'Specialty Finishes', 'Designer Elements']
-        });
-      }
-
+    try {
+      const suggestions = await AIService.generateElevationStyles(
+        currentProject.plot,
+        currentProject.requirements,
+        customPrompt.trim() || undefined
+      );
+      
       setAiSuggestions(suggestions);
       setIsGenerating(false);
       setShowAiSuggestions(true);
-    }, 3000);
+    } catch (error) {
+      console.error('Failed to generate AI suggestions:', error);
+      setIsGenerating(false);
+    }
   };
 
   const handleContinue = () => {

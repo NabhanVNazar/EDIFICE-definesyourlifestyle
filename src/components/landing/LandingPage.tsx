@@ -21,10 +21,12 @@ import {
 } from 'lucide-react';
 import Logo from '../common/Logo';
 import AuthModal from './AuthModal';
+import DemoVideoModal from '../demo/DemoVideoModal';
 
 const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   const features = [
     {
@@ -214,6 +216,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
                 </motion.button>
                 
                 <motion.button
+                  onClick={() => setShowDemoModal(true)}
                   className="border-2 border-amber-300 text-amber-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-amber-50 transition-all duration-300 flex items-center justify-center space-x-3"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -638,6 +641,12 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
         mode={authMode}
         onSuccess={handleAuthSuccess}
         onSwitchMode={(mode) => setAuthMode(mode)}
+      />
+
+      {/* Demo Video Modal */}
+      <DemoVideoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
       />
     </div>
   );

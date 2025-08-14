@@ -1,11 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, User, Settings, HelpCircle } from 'lucide-react';
+import { Home, User, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import Logo from './Logo';
 
 const Header: React.FC = () => {
-  const { user, toggleAIAssistant } = useAppStore();
+  const { user, toggleAIAssistant, signOut } = useAppStore();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <motion.header 
@@ -72,13 +76,24 @@ const Header: React.FC = () => {
             {user ? (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-amber-900 font-medium">{user.name}</span>
-                <motion.button
-                  className="p-2 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <User size={20} />
-                </motion.button>
+                <div className="flex items-center space-x-2">
+                  <motion.button
+                    className="p-2 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <User size={20} />
+                  </motion.button>
+                  <motion.button
+                    onClick={handleSignOut}
+                    className="p-2 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Sign Out"
+                  >
+                    <LogOut size={20} />
+                  </motion.button>
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-3">

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Lock, User, Eye, EyeOff, ToggleLeft as Google, Github, Sparkles, Shield, Zap } from 'lucide-react';
+import { AuthService } from '../../services/authService';
+import { useAppStore } from '../../store/useAppStore';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess,
   onSwitchMode
 }) => {
+  const { setUser } = useAppStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -70,20 +73,64 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (mode === 'signup') {
+        const { user, error } = await AuthService.signUp(
+          formData.email,
+          formData.password,
+          formData.name
+        );
+        
+        if (error) {
+          setErrors({ general: error.message });
+          return;
+        }
+      } else {
+        const { user, error } = await AuthService.signIn(
+          formData.email,
+          formData.password
+        );
+        
+        if (error) {
+          setErrors({ general: error.message });
+          return;
+        }
+      }
+      
+      // Get current user and update store
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+      
       setIsLoading(false);
       onSuccess();
-    }, 1500);
+    } catch (error) {
+      setErrors({ general: 'An unexpected error occurred' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSocialAuth = (provider: string) => {
+  const handleSocialAuth = async (provider: string) => {
     setIsLoading(true);
-    // Simulate social auth
-    setTimeout(() => {
+    
+    try {
+      if (provider === 'google') {
+        const { error } = await AuthService.signInWithGoogle();
+        if (error) {
+          setErrors({ general: error.message });
+          return;
+        }
+      }
+      
       setIsLoading(false);
       onSuccess();
-    }, 1000);
+    } catch (error) {
+      setErrors({ general: 'Social authentication failed' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const benefits = [
@@ -189,7 +236,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               {/* Right Side - Form */}
-              <div className="p-8 overflow-y-auto">
+              <div className="p-8 overflow-y-auto max-h-[90vh]">
                 <div className="max-w-sm mx-auto">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -206,6 +253,17 @@ const AuthModal: React.FC<AuthModalProps> = ({
                       }
                     </p>
                   </motion.div>
+
+                  {/* Error Message */}
+                  {errors.general && (
+                    <motion.div
+                      className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <p className="text-red-600 text-sm">{errors.general}</p>
+                    </motion.div>
+                  )}
 
                   {/* Social Auth Buttons */}
                   <div className="space-y-3 mb-6">
