@@ -3,11 +3,46 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// Create a mock client for development when credentials are missing
+const createMockClient = () => {
+  return {
+    auth: {
+      signInWithPassword: () => Promise.resolve({ data: null, error: null }),
+      signUp: () => Promise.resolve({ data: null, error: null }),
+      signOut: () => Promise.resolve({ error: null }),
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+    },
+    from: () => ({
+      select: () => ({ data: [], error: null }),
+      insert: () => ({ data: [], error: null }),
+      update: () => ({ data: [], error: null }),
+      delete: () => ({ data: [], error: null }),
+    }),
+    storage: {
+      from: () => ({
+        upload: () => Promise.resolve({ data: null, error: null }),
+        download: () => Promise.resolve({ data: null, error: null }),
+      }),
+    },
+  };
+};
+
+// Only throw an error in production
+let supabase;
+if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'https://your-project.supabase.co') {
+  if (import.meta.env.MODE === 'production') {
+    throw new Error('Missing Supabase environment variables');
+  } else {
+    console.warn('Using mock Supabase client in development. Please set up your Supabase credentials in .env for full functionality.');
+    supabase = createMockClient();
+  }
+} else {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase };
 
 // Database types
 export interface Database {
