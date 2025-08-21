@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Palette, 
@@ -24,9 +24,11 @@ const ElevationsStep: React.FC = () => {
   const { currentProject, setCurrentStep } = useAppStore();
   const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<ElevationStyle[]>([]);
   const [showAiSuggestions, setShowAiSuggestions] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
+  const [designImage, setDesignImage] = useState<string>('');
 
   const baseElevationStyles: ElevationStyle[] = [
     {
@@ -102,6 +104,17 @@ const ElevationsStep: React.FC = () => {
 
   const handleContinue = () => {
     setCurrentStep('export');
+  };
+
+  const handlePreview = () => {
+    // In a real app, this would generate the actual design
+    // For now, we'll use a placeholder image
+    setDesignImage('https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=1200');
+    setIsPreviewing(true);
+  };
+
+  const handleBackToSelection = () => {
+    setIsPreviewing(false);
   };
 
   if (!currentProject) {
@@ -380,17 +393,82 @@ const ElevationsStep: React.FC = () => {
           })}
         </div>
 
-        {/* Selected Style Display */}
-        {selectedStyle && (
+        {/* Preview Section */}
+        {selectedStyle && !isPreviewing && (
           <motion.div
             className="text-center mb-8 p-4 bg-amber-50 rounded-lg border border-amber-200"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="text-amber-800 font-medium flex items-center justify-center space-x-2">
+            <p className="text-amber-800 font-medium flex items-center justify-center space-x-2 mb-4">
               <Check size={16} className="text-green-600" />
               <span>Selected: {allStyles.find(s => s.id === selectedStyle)?.name}</span>
             </p>
+            <motion.button
+              onClick={handlePreview}
+              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Preview Design
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Design Preview */}
+        {isPreviewing && selectedStyle && (
+          <motion.div
+            className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8 border border-amber-100"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="p-6 border-b border-amber-100">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-semibold text-amber-900">Design Preview</h2>
+                <motion.button
+                  onClick={handleBackToSelection}
+                  className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition-colors text-sm"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Back to Selection
+                </motion.button>
+              </div>
+              <p className="text-amber-700 mt-2">
+                Preview of your selected {allStyles.find(s => s.id === selectedStyle)?.name} style
+              </p>
+            </div>
+            
+            <div className="p-4 bg-gray-50">
+              <div className="relative bg-white rounded-lg overflow-hidden border border-gray-200">
+                {designImage ? (
+                  <img
+                    src={designImage}
+                    alt="Design preview"
+                    className="w-full h-auto max-h-[500px] object-contain"
+                  />
+                ) : (
+                  <div className="h-64 flex items-center justify-center bg-gray-100">
+                    <div className="text-gray-400">Design preview loading...</div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex justify-center">
+                <motion.button
+                  onClick={handleContinue}
+                  className="px-8 py-3 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-xl"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Check size={20} />
+                  <span>Proceed to Export</span>
+                  <ArrowRight size={20} />
+                </motion.button>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -423,28 +501,30 @@ const ElevationsStep: React.FC = () => {
         </motion.div>
 
         {/* Continue Button */}
-        <motion.div
-          className="flex justify-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <motion.button
-            onClick={handleContinue}
-            disabled={!selectedStyle}
-            className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 ${
-              selectedStyle
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-xl cursor-pointer'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-            whileHover={selectedStyle ? { scale: 1.05, y: -2 } : {}}
-            whileTap={selectedStyle ? { scale: 0.95 } : {}}
+        {!isPreviewing && (
+          <motion.div
+            className="flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1 }}
           >
-            <TreePine size={20} />
-            <span>Generate Final Design</span>
-            <ArrowRight size={20} />
-          </motion.button>
-        </motion.div>
+            <motion.button
+              onClick={handleContinue}
+              disabled={!selectedStyle}
+              className={`px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center space-x-3 ${
+                selectedStyle
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-xl cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              whileHover={selectedStyle ? { scale: 1.05, y: -2 } : {}}
+              whileTap={selectedStyle ? { scale: 0.95 } : {}}
+            >
+              <TreePine size={20} />
+              <span>Generate Final Design</span>
+              <ArrowRight size={20} />
+            </motion.button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

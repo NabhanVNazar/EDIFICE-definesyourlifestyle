@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FileText, 
-  Edit3, 
-  Box, 
-  Palette, 
+import {
+  FileText,
+  Edit3,
+  Box,
+  Palette,
   Download,
   CheckCircle
 } from 'lucide-react';
