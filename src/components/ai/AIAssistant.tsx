@@ -7,15 +7,28 @@ import {
   Bot,
   User,
   Lightbulb,
-  Zap
+  Zap,
+  Image,
+  Sparkles,
+  Camera,
+  Download,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  RefreshCw
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { AIMessage } from '../../types';
+import { AIService } from '../../services/aiService';
 
 const AIAssistant: React.FC = () => {
-  const { showAIAssistant, toggleAIAssistant, aiMessages, addAIMessage, currentStep } = useAppStore();
+  const { showAIAssistant, toggleAIAssistant, aiMessages, addAIMessage, currentStep, currentProject } = useAppStore();
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string>('');
+  const [showImageGenerator, setShowImageGenerator] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -41,39 +54,89 @@ const AIAssistant: React.FC = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = getContextualResponse(input, currentStep);
+    try {
+      // Get AI response using the enhanced AI service
+      const response = await AIService.getChatResponse(
+        input, 
+        currentStep, 
+        currentProject,
+        aiMessages
+      );
+      
       const aiMessage: AIMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: responses,
+        content: response,
         timestamp: new Date(),
         context: currentStep
       };
 
       addAIMessage(aiMessage);
       setIsTyping(false);
-    }, 1500);
+    } catch (error) {
+      console.error('AI response error:', error);
+      const errorMessage: AIMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "I apologize, but I'm having trouble processing your request right now. Please try again or rephrase your question.",
+        timestamp: new Date(),
+        context: currentStep
+      };
+      addAIMessage(errorMessage);
+      setIsTyping(false);
+    }
   };
 
-  const getContextualResponse = (query: string, step: string) => {
-    const responses = {
-      input: "I can help you define your project requirements! Consider factors like family size, lifestyle, budget, and local regulations. Would you like me to suggest room layouts based on your plot size?",
-      '2d-edit': "Great question about the floor plan! I can help you optimize room placement, ensure proper circulation, and maintain structural integrity. Try placing the kitchen near the dining area for better flow.",
-      '3d-view': "The 3D model helps visualize your design! You can navigate around to check room proportions, lighting, and spatial relationships. Would you like tips on interior layouts?",
-      elevations: "For exterior design, consider your local climate, neighborhood aesthetics, and maintenance requirements. Modern styles work well with large windows, while classic styles offer timeless appeal.",
-      export: "Your design is ready for export! I can help you prepare construction documents, material lists, or presentation formats. What type of output do you need?"
-    };
+  const handleGenerateImage = async () => {
+    if (!imagePrompt.trim()) return;
 
-    return responses[step as keyof typeof responses] || "I'm here to help with your home design project! Feel free to ask about any aspect of the design process.";
+    setIsGeneratingImage(true);
+    
+    try {
+      const image = await AIService.generateDesignImage(
+        imagePrompt,
+        'modern', // Could be dynamic based on user's style preference
+        currentProject
+      );
+      
+      setGeneratedImage(image);
+      
+      // Add image message to chat
+      const imageMessage: AIMessage = {
+        id: Date.now().toString(),
+        type: 'assistant',
+        content: `Here's a design visualization based on your description: "${imagePrompt}"`,
+        timestamp: new Date(),
+        context: currentStep
+      };
+      
+      addAIMessage(imageMessage);
+      setImagePrompt('');
+    } catch (error) {
+      console.error('Image generation error:', error);
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const downloadImage = (imageUrl: string) => {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = 'edifice-design.jpg';
+    link.click();
   };
 
   const quickSuggestions = [
-    "Help me optimize room layout",
-    "Suggest elevation styles",
-    "Calculate material costs",
-    "Review design standards"
+    "Help me optimize the room layout for better flow",
+    "What elevation style works best for my climate?",
+    "Calculate construction costs for my design",
+    "Suggest energy-efficient materials",
+    "Review my design for building code compliance",
+    "Generate a 3D visualization of my exterior"
   ];
 
   return (
@@ -94,18 +157,71 @@ const AIAssistant: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-white">AI Assistant</h3>
-                <p className="text-xs text-amber-100">Always here to help</p>
+                <p className="text-xs text-amber-100">Chat • Image Generation • Expert Guidance</p>
               </div>
             </div>
-            <motion.button
-              onClick={toggleAIAssistant}
-              className="text-white hover:bg-white hover:bg-opacity-20 p-1 rounded-full transition-colors"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <X size={16} />
-            </motion.button>
+            <div className="flex items-center space-x-2">
+              <motion.button
+                onClick={() => setShowImageGenerator(!showImageGenerator)}
+                className={`text-white hover:bg-white hover:bg-opacity-20 p-1 rounded-full transition-colors ${
+                  showImageGenerator ? 'bg-white bg-opacity-20' : ''
+                }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                title="Image Generator"
+              >
+                <Image size={16} />
+              </motion.button>
+              <motion.button
+                onClick={toggleAIAssistant}
+                className="text-white hover:bg-white hover:bg-opacity-20 p-1 rounded-full transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={16} />
+              </motion.button>
+            </div>
           </div>
+
+          {/* Image Generator Panel */}
+          <AnimatePresence>
+            {showImageGenerator && (
+              <motion.div
+                className="bg-gradient-to-r from-purple-500 to-blue-500 p-4 border-b border-purple-400"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+              >
+                <div className="flex items-center space-x-2 mb-3">
+                  <Sparkles size={16} className="text-white" />
+                  <h4 className="text-white font-medium">AI Image Generator</h4>
+                </div>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="Describe the design you want to visualize..."
+                    className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white"
+                    onKeyPress={(e) => e.key === 'Enter' && handleGenerateImage()}
+                  />
+                  <motion.button
+                    onClick={handleGenerateImage}
+                    disabled={!imagePrompt.trim() || isGeneratingImage}
+                    className="bg-white text-purple-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {isGeneratingImage ? (
+                      <RefreshCw size={14} className="animate-spin" />
+                    ) : (
+                      <Camera size={14} />
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -113,7 +229,7 @@ const AIAssistant: React.FC = () => {
               <div className="text-center py-6">
                 <Lightbulb className="w-12 h-12 text-amber-400 mx-auto mb-3" />
                 <p className="text-gray-600 text-sm mb-4">
-                  Hi! I'm your AI design assistant. I can help you with every step of your home design process.
+                  Hi! I'm your AI design assistant. I can help with design advice, generate images, and guide you through every step.
                 </p>
                 <div className="space-y-2">
                   {quickSuggestions.map((suggestion, index) => (
@@ -153,9 +269,81 @@ const AIAssistant: React.FC = () => {
                     )}
                     <p className="text-sm leading-relaxed">{message.content}</p>
                   </div>
+                      
+                      {/* Message Actions */}
+                      {message.type === 'assistant' && (
+                        <div className="flex items-center space-x-2 mt-2">
+                          <motion.button
+                            onClick={() => copyToClipboard(message.content)}
+                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Copy size={10} />
+                            <span>Copy</span>
+                          </motion.button>
+                          <motion.button
+                            className="text-xs text-gray-500 hover:text-green-600 flex items-center space-x-1"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <ThumbsUp size={10} />
+                          </motion.button>
+                          <motion.button
+                            className="text-xs text-gray-500 hover:text-red-600 flex items-center space-x-1"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <ThumbsDown size={10} />
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
                 </div>
               </motion.div>
             ))}
+
+            {/* Generated Image Display */}
+            {generatedImage && (
+              <motion.div
+                className="flex justify-start"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="bg-gray-100 p-3 rounded-2xl max-w-[80%]">
+                  <div className="flex items-start space-x-2">
+                    <Bot size={14} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <img
+                        src={generatedImage}
+                        alt="AI Generated Design"
+                        className="w-full max-w-xs rounded-lg mb-2"
+                      />
+                      <div className="flex items-center space-x-2">
+                        <motion.button
+                          onClick={() => downloadImage(generatedImage)}
+                          className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Download size={10} />
+                          <span>Download</span>
+                        </motion.button>
+                        <motion.button
+                          onClick={() => copyToClipboard(generatedImage)}
+                          className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Copy size={10} />
+                          <span>Copy URL</span>
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {isTyping && (
               <motion.div
@@ -189,13 +377,14 @@ const AIAssistant: React.FC = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-gray-100 space-y-3">
+            {/* Main Chat Input */}
             <div className="flex items-center space-x-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything about your design..."
+                placeholder="Ask about design, materials, costs, or anything else..."
                 className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               />
@@ -207,6 +396,35 @@ const AIAssistant: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <Send size={16} />
+              </motion.button>
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="flex items-center space-x-2 text-xs">
+              <span className="text-gray-500">Quick:</span>
+              <motion.button
+                onClick={() => setInput("Calculate construction costs for my design")}
+                className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full hover:bg-blue-200 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                💰 Costs
+              </motion.button>
+              <motion.button
+                onClick={() => setInput("Suggest energy-efficient materials")}
+                className="bg-green-100 text-green-800 px-2 py-1 rounded-full hover:bg-green-200 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                🌱 Materials
+              </motion.button>
+              <motion.button
+                onClick={() => setInput("Review my design for any issues")}
+                className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full hover:bg-purple-200 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                🔍 Review
               </motion.button>
             </div>
           </div>
