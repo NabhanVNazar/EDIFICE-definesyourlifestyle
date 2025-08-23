@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
+    "@langchain/core": "^0.3.72",
+    "@langchain/openai": "^0.6.9",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "@supabase/supabase-js": "^2.55.0",
@@ -19,10 +21,13 @@
     "framer-motion": "^12.23.12",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "langchain": "^0.3.31",
     "lucide-react": "^0.344.0",
+    "openai": "^5.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "^0.179.1",
+    "uuid": "^11.1.0",
     "zustand": "^5.0.7"
   },
   "devDependencies": {
