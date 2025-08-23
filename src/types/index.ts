@@ -67,6 +67,13 @@ export interface Blueprint {
   updatedAt: Date;
 }
 
+export interface PartialBlueprint {
+  rooms: Room[];
+  walls: Wall[];
+  doors: Door[];
+  windows: Window[];
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -96,6 +103,16 @@ export interface AreaCalculation {
   builtUpArea: number;
   carpetArea: number;
   openArea: number;
+}
+
+export interface CostBreakdownItem {
+  category: string;
+  cost: number;
+}
+
+export interface CostEstimate {
+  totalCost: number;
+  breakdown: CostBreakdownItem[];
 }
 
 export interface ElevationStyle {
