@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { Plot, Requirements, Project } from '../../types';
-import { AIService } from '../../services/aiService';
+import { AdvancedAIService } from '../../services/advancedAIService';
 
 const InputStep: React.FC = () => {
   const { setCurrentStep, addProject, user } = useAppStore();
@@ -65,7 +65,7 @@ const InputStep: React.FC = () => {
 
     try {
       // Generate AI blueprint
-      const blueprint = await AIService.generateBlueprint(plot, requirements);
+      const blueprint = await AdvancedAIService.generateIntelligentBlueprint(plot, requirements);
       project.blueprint = blueprint as any;
       
       addProject(project);

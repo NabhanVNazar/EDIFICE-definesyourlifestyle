@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { ElevationStyle } from '../../types';
-import { AIService } from '../../services/aiService';
+import { AdvancedAIService } from '../../services/advancedAIService';
 
 const ElevationsStep: React.FC = () => {
   const { currentProject, setCurrentStep } = useAppStore();
@@ -87,7 +87,7 @@ const ElevationsStep: React.FC = () => {
     setIsGenerating(true);
     
     try {
-      const suggestions = await AIService.generateElevationStyles(
+      const suggestions = await AdvancedAIService.generateAdvancedElevations(
         currentProject.plot,
         currentProject.requirements,
         customPrompt.trim() || undefined

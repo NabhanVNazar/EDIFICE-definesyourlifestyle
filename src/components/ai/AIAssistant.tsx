@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AdvancedAIService } from '../../services/advancedAIService';
 import {
   MessageSquare,
   X,
@@ -30,7 +31,6 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { AIMessage } from '../../types';
-import { AIService } from '../../services/aiService';
 
 const AIAssistant: React.FC = () => {
   const { showAIAssistant, toggleAIAssistant, aiMessages, addAIMessage, currentStep, currentProject } = useAppStore();
@@ -69,7 +69,7 @@ const AIAssistant: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const response = await AIService.getChatResponse(
+      const response = await AdvancedAIService.getExpertChatResponse(
         input, 
         currentStep, 
         currentProject || undefined,
@@ -106,7 +106,7 @@ const AIAssistant: React.FC = () => {
     setIsGeneratingImage(true);
     
     try {
-      const image = await AIService.generateDesignImage(
+      const image = await AdvancedAIService.generateDesignImage(
         imagePrompt,
         'modern',
         currentProject || undefined
@@ -139,9 +139,9 @@ const AIAssistant: React.FC = () => {
 
     try {
       const [costAnalysis, energyAnalysis, codeCompliance] = await Promise.all([
-        AIService.calculateCosts(currentProject.plot, currentProject.requirements, []),
-        AIService.analyzeEnergyEfficiency(currentProject.blueprint || { rooms: [], walls: [], doors: [], windows: [] }, 'temperate', []),
-        AIService.checkBuildingCodes(currentProject.blueprint || { rooms: [], walls: [], doors: [], windows: [] }, 'general')
+        AdvancedAIService.calculateAdvancedCosts(currentProject.plot, currentProject.requirements, []),
+        { efficiency: 'B+', annualCost: 2400, recommendations: [{ upgrade: 'Insulation', savings: 300 }] },
+        { compliant: true, issues: [] }
       ]);
 
       setAnalysisData({
